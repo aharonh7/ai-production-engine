@@ -1,4 +1,4 @@
-# BOOK METADATA
+BOOK METADATA
 title: The Lost Key
 book_type: sci fiction
 target_audience: Adults, mystery readers
