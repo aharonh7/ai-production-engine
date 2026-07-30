@@ -1,0 +1,63 @@
+# BOOK METADATA
+title: The Lost Key
+book_type: sci fiction
+target_audience: Adults, mystery readers
+language: English
+target_total_word_count: 30000-50000
+target_chapter_count: 55
+target_words_per_chapter: 6000-1000
+
+# PURPOSE & PROMISE
+core_promise: A woman returns to her childhood home to find a missing key that unlocks a family secret.
+one_sentence_pitch: After her grandmother's death, Elena returns to the old house and discovers that the key she's looking for may unlock more than just a door.
+
+# VOICE & STYLE GUIDE
+point_of_view: first person
+tense: past
+tone: atmospheric, mysterious, slightly melancholic
+formality_level: casual conversational
+sentence_complexity: medium, varied
+regional_spelling: American English
+things_to_avoid: melodrama, excessive gore, romance subplot
+
+# STRUCTURE / OUTLINE
+overall_arc: Elena arrives at the house, searches for the key, uncovers family secrets, makes a decision about the past, and leaves changed.
+
+# CONSTRAINTS & NON-NEGOTIABLES
+must_include: The key, the locked desk, a letter, a secret
+must_avoid: Violence, death on page, romance
+accuracy_requirements: None
+
+# DEFINITION OF DONE
+chapter_level: Chapter advances the search, reveals new information
+book_level: All 5 chapters written, secret revealed, Elena's arc complete
+
+# === NOVEL MODULE ===
+
+# CHARACTERS
+- name: Elena
+  role: protagonist
+  external_goal: Find the key
+  internal_need: Understand her family's past and her own identity
+  flaw/wound: Avoids emotional connection, ran away from home 10 years ago
+  voice_notes: Reflective, slightly formal, observant
+  arc: From avoidance to acceptance
+
+- name: Margaret (grandmother)
+  role: antagonist (deceased)
+  external_goal: Unknown (dead)
+  internal_need: To be understood after death
+  flaw/wound: Kept secrets to protect her family
+  voice_notes: N/A (appears through letters)
+  arc: Her secret is revealed posthumously
+
+# WORLD / SETTING
+time_period_and_place: Present day, a small coastal town, old Victorian house
+world_rules: No magic, realistic
+sensory_palette: Dust, old wood, sea air, afternoon light through curtains, locked doors
+
+# PLOT
+central_conflict: Elena must find the key before the house is sold
+stakes: The secret will be lost forever if she doesn't find it
+subplots: Relationship with the town, memories of childhood
+themes: Family secrets, memory, identity, letting go

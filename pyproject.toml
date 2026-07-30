@@ -1,0 +1,26 @@
+[project]
+name = "ai-production-engine"
+version = "0.1.0"
+description = "Local-first AI book production engine"
+requires-python = ">=3.11"
+dependencies = [
+  "fastapi>=0.110",
+  "uvicorn[standard]>=0.29",
+  "sqlalchemy>=2.0",
+  "pydantic>=2.6",
+  "pydantic-settings>=2.2",
+  "PyYAML>=6.0",
+  "httpx>=0.27"
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8.0", "pytest-asyncio>=0.23"]
+providers = [
+  "openai>=1.40",
+  "anthropic>=0.34",
+  "google-generativeai>=0.7"
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]

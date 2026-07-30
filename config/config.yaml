@@ -1,0 +1,18 @@
+# config/config.yaml
+default_provider: deepseek
+default_model: deepseek-chat
+default_budget: 2.0
+
+# מיפוי תפקידים לספקים – הכל DeepSeek
+skill_provider_mapping:
+  classify_project: deepseek
+  create_outline: deepseek
+  write_chapter: deepseek
+  structural_editor: deepseek
+  revise_chapter: deepseek
+  language_editor: deepseek
+  revise_language: deepseek
+  continuity_check: deepseek
+  language_check: deepseek
+  story_state_update: deepseek
+  assemble_manuscript: deepseek

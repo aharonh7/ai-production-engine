@@ -1,0 +1,48 @@
+default:
+  provider: deepseek
+  model: deepseek-chat
+
+skills:
+  create_project_brief:
+    provider: deepseek
+    model: deepseek-chat
+
+  build_story_bible:
+    provider: deepseek
+    model: deepseek-chat
+
+  build_outline:
+    provider: deepseek
+    model: deepseek-chat
+
+  write_chapter:
+    provider: deepseek
+    model: deepseek-chat
+
+  structural_editor:
+    provider: deepseek
+    model: deepseek-chat
+
+  revise_chapter:
+    provider: deepseek
+    model: deepseek-chat
+
+  language_editor:
+    provider: deepseek
+    model: deepseek-chat
+
+  revise_language:
+    provider: deepseek
+    model: deepseek-chat
+
+  continuity_check:
+    provider: deepseek
+    model: deepseek-chat
+
+  story_state_update:
+    provider: deepseek
+    model: deepseek-chat
+
+  assemble_manuscript:
+    provider: deepseek
+    model: deepseek-chat

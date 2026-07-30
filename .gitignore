@@ -1,0 +1,41 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Logs
+*.log
+*.tmp
+
+# החריג את כל הקבצים המיותרים שלך
+*BOOK METADATA*.txt
+*gittarbitutes*
+*ALRODUCTION*
+
+# System files
+.DS_Store
+Thumbs.db
+# פלטים וקבצים זמניים
+output/
+*.db
+*.json
+*.log
+*.tmp

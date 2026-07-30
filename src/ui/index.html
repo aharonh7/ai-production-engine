@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Production Engine</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: #0d0d0d;
+            color: #e0e0e0;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        .container { max-width: 1200px; margin: 0 auto; }
+        h1 { color: #00ccff; font-size: 28px; margin-bottom: 5px; }
+        .subtitle { color: #888; margin-bottom: 30px; font-size: 14px; }
+        
+        .card {
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 10px;
+            padding: 25px;
+            margin-bottom: 20px;
+        }
+        .card h2 { color: #00ccff; font-size: 20px; margin-bottom: 15px; }
+        
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; color: #aaa; font-size: 14px; margin-bottom: 5px; }
+        .form-group input, .form-group select, .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            background: #222;
+            border: 1px solid #444;
+            border-radius: 6px;
+            color: #e0e0e0;
+            font-size: 14px;
+        }
+        .form-group input:focus, .form-group textarea:focus {
+            outline: none;
+            border-color: #00ccff;
+        }
+        .form-group textarea { resize: vertical; font-family: inherit; }
+        
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .btn-primary { background: #0066cc; color: white; }
+        .btn-primary:hover { background: #0055aa; }
+        .btn-success { background: #00aa44; color: white; }
+        .btn-success:hover { background: #008833; }
+        .btn-danger { background: #cc0033; color: white; }
+        .btn-danger:hover { background: #aa0022; }
+        .btn-warning { background: #cc8800; color: white; }
+        .btn-warning:hover { background: #aa7700; }
+        .btn-sm { padding: 5px 12px; font-size: 12px; }
+        
+        .project-list { list-style: none; }
+        .project-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 15px;
+            background: #222;
+            border: 1px solid #333;
+            border-radius: 6px;
+            margin-bottom: 8px;
+            transition: border-color 0.3s;
+        }
+        .project-item:hover { border-color: #555; }
+        .project-info { flex: 1; }
+        .project-name { font-weight: bold; color: #fff; }
+        .project-meta { color: #888; font-size: 12px; }
+        .project-actions { display: flex; gap: 6px; flex-wrap: wrap; }
+        
+        .status-badge {
+            display: inline-block;
+            padding: 2px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+        }
+        .status-draft { background: #444; color: #aaa; }
+        .status-active { background: #0066cc; color: white; }
+        .status-completed { background: #00aa44; color: white; }
+        .status-failed { background: #cc0033; color: white; }
+        
+        .budget-bar {
+            background: #222;
+            border-radius: 6px;
+            padding: 12px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .budget-amount { font-size: 18px; font-weight: bold; color: #00ccff; }
+        .budget-status { font-size: 13px; color: #888; }
+        
+        .log-area {
+            background: #111;
+            border: 1px solid #333;
+            border-radius: 6px;
+            padding: 15px;
+            max-height: 300px;
+            overflow-y: auto;
+            font-family: 'Consolas', monospace;
+            font-size: 13px;
+            line-height: 1.6;
+            white-space: pre-wrap;
+        }
+        
+        .hidden { display: none; }
+        .flex { display: flex; gap: 10px; align-items: center; }
+        .flex-wrap { flex-wrap: wrap; }
+        .mt-10 { margin-top: 10px; }
+        .mb-10 { margin-bottom: 10px; }
+        .gap-5 { gap: 5px; }
+        
+        .view-content {
+            background: #111;
+            border: 1px solid #333;
+            border-radius: 6px;
+            padding: 15px;
+            max-height: 400px;
+            overflow-y: auto;
+            font-size: 14px;
+            line-height: 1.6;
+            white-space: pre-wrap;
+        }
+        
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #111; }
+        ::-webkit-scrollbar-thumb { background: #444; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #666; }
+        
+        .bible-fields {
+            display: none;
+            margin-top: 15px;
+            padding: 15px;
+            background: #1a1a1a;
+            border-radius: 8px;
+            border: 1px solid #444;
+        }
+        .bible-fields.show { display: block; }
+        .bible-fields h3 {
+            color: #00ccff;
+            font-size: 16px;
+            margin-bottom: 10px;
+        }
+        .bible-fields .hint {
+            color: #888;
+            font-size: 13px;
+            margin-bottom: 15px;
+        }
+        
+        @media (max-width: 768px) {
+            .project-item { flex-direction: column; align-items: stretch; gap: 8px; }
+            .project-actions { justify-content: flex-start; }
+            .budget-bar { flex-direction: column; align-items: stretch; text-align: center; }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>📖 AI Production Engine</h1>
+    <div class="subtitle">מערכת לייצור ספרים אוטומטי</div>
+    
+    <!-- תקציב -->
+    <div class="card">
+        <div class="budget-bar">
+            <div>
+                <span style="color: #888;">💰 תקציב:</span>
+                <span class="budget-amount" id="budgetDisplay">0.00$</span>
+                <span class="budget-status" id="budgetStatus"></span>
+            </div>
+            <div class="flex">
+                <button class="btn btn-sm btn-primary" onclick="loadBudget()">🔄 רענן</button>
+                <button class="btn btn-sm btn-warning" onclick="checkBalance()">💳 בדיקת יתרה</button>
+            </div>
+        </div>
+        <div id="balanceResult" class="mt-10" style="color: #888; font-size: 13px;"></div>
+    </div>
+    
+    <!-- יצירת פרויקט -->
+    <div class="card">
+        <h2>➕ פרויקט חדש</h2>
+        <form id="createForm">
+            <div class="form-group">
+                <label>שם הפרויקט *</label>
+                <input type="text" id="projectName" required placeholder="למשל: The Lost Key">
+            </div>
+            <div class="form-group">
+                <label>סוג הספר</label>
+                <select id="bookType">
+                    <option value="novel">רומן/פיקשן</option>
+                    <option value="childrens">ספר ילדים</option>
+                    <option value="technical">מדריך טכני</option>
+                    <option value="selfhelp">פיתוח אישי</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>מטרת הספר (תיאור קצר)</label>
+                <textarea id="goal" rows="3" placeholder="למשל: רומן מסתורין על אישה שמחפשת מפתח..."></textarea>
+            </div>
+<div class="form-group">
+    <label>טווח מילים לפרק (לכתיבה)</label>
+    <div style="display: flex; gap: 10px;">
+        <input type="number" id="minWords" value="1000" placeholder="מינימום" style="flex:1;">
+        <input type="number" id="maxWords" value="1200" placeholder="מקסימום" style="flex:1;">
+    </div>
+</div>
+            
+            <!-- ===== אזור העלאת בייבל ===== -->
+            <div class="form-group" style="border: 2px dashed #555; padding: 20px; border-radius: 8px;">
+                <label>📖 העלאת בייבל (קובץ .txt .md או .json)</label>
+                <input type="file" id="bibleFile" accept=".txt,.md,.json" style="display: block; margin: 10px 0;">
+                <small style="color: #888;">הבייבל צריך להכיל: מטרת הספר, דמויות, עולם, סגנון כתיבה וכו'.</small>
+                <div id="biblePreview" style="margin-top: 10px; display: none;">
+                    <span style="background: #2a2a2a; padding: 5px 10px; border-radius: 4px; font-size: 14px;">📄 </span>
+                    <button type="button" onclick="removeBible()" style="background: #8b0000; border: none; color: white; padding: 2px 10px; border-radius: 4px; cursor: pointer;">הסר</button>
+                </div>
+                
+                <!-- ===== שדות שימלאו מהבייבל ===== -->
+                <div id="bibleFields" class="bible-fields">
+                    <h3>📊 נתונים מחולצים מהבייבל</h3>
+                    <p class="hint">בדוק את הנתונים, שנה במידת הצורך, ואז לחץ "מלא את הפרויקט"</p>
+                    
+                    <div class="form-group">
+                        <label>שם הספר</label>
+                        <input type="text" id="extractedTitle" style="background: #111; color: #fff;">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>סוג הספר</label>
+                        <select id="extractedType">
+                            <option value="novel">רומן/פיקשן</option>
+                            <option value="childrens">ספר ילדים</option>
+                            <option value="technical">מדריך טכני</option>
+                            <option value="selfhelp">פיתוח אישי</option>
+                        </select>
+                    </div>
+                    
+<div class="form-group">
+    <label>טווח מילים לספר (יעד) - מחולץ מהבייבל</label>
+    <div style="display: flex; gap: 10px;">
+        <input type="number" id="extractedMinWords" value="5000" style="flex:1; background: #111; color: #fff;" oninput="calculateWordsPerChapter()">
+        <input type="number" id="extractedMaxWords" value="6000" style="flex:1; background: #111; color: #fff;" oninput="calculateWordsPerChapter()">
+    </div>
+    <small style="color: #666; font-size: 12px;">מחושב מתוך הבייבל. משפיע על חישוב המילים לפרק.</small>
+</div>                    
+                    <div class="form-group">
+                        <label>מספר פרקים</label>
+                        <input type="number" id="extractedChapterCount" style="background: #111; color: #fff;" oninput="calculateWordsPerChapter()">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>מילים ממוצעות לפרק (מחושב אוטומטית)</label>
+                        <input type="number" id="extractedWordsPerChapter" style="background: #111; color: #fff;" readonly>
+                        <small style="color: #666; font-size: 12px;">מחושב מתוך טווח המילים ומספר הפרקים. ניתן לשנות במידת הצורך.</small>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>POV (נקודת מבט)</label>
+                        <input type="text" id="extractedPOV" style="background: #111; color: #fff;">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Tense (זמן)</label>
+                        <input type="text" id="extractedTense" style="background: #111; color: #fff;">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Tone (טון)</label>
+                        <input type="text" id="extractedTone" style="background: #111; color: #fff;">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>דמויות</label>
+                        <input type="text" id="extractedCharacters" style="background: #111; color: #fff;">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Setting (מיקום)</label>
+                        <input type="text" id="extractedSetting" style="background: #111; color: #fff;">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Core Promise (הבטחת הספר)</label>
+                        <textarea id="extractedCorePromise" rows="2" style="background: #111; color: #fff;"></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>One Sentence Pitch (תיאור קצר)</label>
+                        <textarea id="extractedPitch" rows="2" style="background: #111; color: #fff;"></textarea>
+                    </div>
+                    
+                    <button type="button" onclick="fillProjectFromBible()" style="width: 100%; padding: 10px; background: #00aa44; border: none; color: white; font-size: 14px; border-radius: 6px; cursor: pointer;">✅ מלא את הפרויקט מהנתונים האלה</button>
+                </div>
+            </div>
+            
+            <button type="submit" style="width: 100%; padding: 12px; background: #0066cc; border: none; color: white; font-size: 16px; border-radius: 6px; cursor: pointer;">🚀 צור פרויקט</button>
+        </form>
+    </div>
+    
+    <!-- רשימת פרויקטים -->
+    <div class="card">
+        <h2>📚 הפרויקטים שלי</h2>
+        <div id="projectsList">
+            <div style="color: #666; text-align: center; padding: 20px;">טוען...</div>
+        </div>
+    </div>
+    
+    <!-- תצוגת תוכן -->
+    <div class="card hidden" id="viewCard">
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+            <h2 id="viewTitle">📄 תוכן</h2>
+            <div class="flex">
+                <button class="btn btn-sm btn-danger" onclick="closeView()">✖ סגור</button>
+            </div>
+        </div>
+        <div id="viewContent" class="view-content"></div>
+    </div>
+    
+    <!-- לוג -->
+    <div class="card">
+        <h2>📋 לוג פעילות</h2>
+        <div id="logArea" class="log-area">🟢 מוכן</div>
+    </div>
+</div>
+
+<script src="/app.js"></script>
+</body>
+</html>
