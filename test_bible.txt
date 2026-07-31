@@ -1,4 +1,4 @@
-# BOOK METADATA
+BOOK METADATA
 title: The Lost Key
 book_type: childrens
 target_audience: kids, aducational
