@@ -40,18 +40,22 @@ document.addEventListener('DOMContentLoaded', function() {
 // חישוב מילים לפרק
 // ============================================
 function calculateWordsPerChapter() {
-    // ===== קח את המילים לפרק ישירות =====
-    const minPerChapter = parseInt(document.getElementById('minWords').value) || 1000;
-    const maxPerChapter = parseInt(document.getElementById('maxWords').value) || 1200;
-    const avgPerChapter = Math.round((minPerChapter + maxPerChapter) / 2);
-    
-    // ===== עדכן את הממוצע המוצג =====
-    document.getElementById('extractedWordsPerChapter').value = avgPerChapter;
-    
-    // ===== עדכן את טווח הספר לפי זה =====
+    // ===== מקור האמת: טווח המילים הכולל לספר ומספר הפרקים =====
+    // (שני השדות האלה מגיעים מהבייבל, וניתנים לעריכה ידנית)
+    const totalMin = parseInt(document.getElementById('extractedMinWords').value) || 0;
+    const totalMax = parseInt(document.getElementById('extractedMaxWords').value) || 0;
     const chapterCount = parseInt(document.getElementById('extractedChapterCount').value) || 5;
-    document.getElementById('extractedMinWords').value = minPerChapter * chapterCount;
-    document.getElementById('extractedMaxWords').value = maxPerChapter * chapterCount;
+
+    const minPerChapter = totalMin ? Math.round(totalMin / chapterCount) : 1000;
+    const maxPerChapter = totalMax ? Math.round(totalMax / chapterCount) : 1200;
+    const avgPerChapter = Math.round((minPerChapter + maxPerChapter) / 2);
+
+    // ===== עדכון שדות "מילים לפרק" הראשיים (אלו שנשלחים בפועל לפייפליין) =====
+    document.getElementById('minWords').value = minPerChapter;
+    document.getElementById('maxWords').value = maxPerChapter;
+
+    // ===== תצוגת הממוצע לעיון - לא נכתב בחזרה לטווח הכולל, כדי לא ליצור סחיפה מעיגול =====
+    document.getElementById('extractedWordsPerChapter').value = avgPerChapter;
 }
 // ============================================
 // ניתוח בייבל
@@ -90,13 +94,10 @@ async function parseBibleAndShowFields(bibleText) {
         document.getElementById('extractedCorePromise').value = data.core_promise || '';
         document.getElementById('extractedPitch').value = data.one_sentence_pitch || '';
         
-        // ===== עדכן את minWords ו-maxWords (מילים לפרק) לפי הבייבל =====
-        const minPerChapter = Math.round(totalMin / chapterCount);
-        const maxPerChapter = Math.round(totalMax / chapterCount);
-        document.getElementById('minWords').value = minPerChapter || 1000;
-        document.getElementById('maxWords').value = maxPerChapter || 1200;
-        
-        // ===== חשב את הממוצע המוצג =====
+        // ===== חשב את המילים לפרק (מהטווח הכולל ÷ מספר הפרקים) ואת הממוצע המוצג =====
+        // (calculateWordsPerChapter קוראת את extractedMinWords/extractedMaxWords/extractedChapterCount
+        //  שהוגדרו זה עתה, ומעדכנת את minWords/maxWords ואת extractedWordsPerChapter בהתאם -
+        //  היא לא נוגעת בטווח הכולל, כדי לא ליצור סחיפה מעיגול)
         calculateWordsPerChapter();
         
         document.getElementById('bibleFields').classList.add('show');
