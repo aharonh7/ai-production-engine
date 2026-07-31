@@ -1,11 +1,11 @@
 # BOOK METADATA
 title: The Lost Key
-book_type: sci fiction
-target_audience: Adults, mystery readers
+book_type: childrens
+target_audience: kids, aducational
 language: English
-target_total_word_count: 30000-50000
+target_total_word_count: 20000-30000
 target_chapter_count: 55
-target_words_per_chapter: 6000-1000
+target_words_per_chapter: 2000-900
 
 # PURPOSE & PROMISE
 core_promise: A woman returns to her childhood home to find a missing key that unlocks a family secret.
