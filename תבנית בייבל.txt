@@ -1,0 +1,55 @@
+# BOOK METADATA
+title: [הכנס כאן את כותרת הספר]
+book_type: [הכנס כאן את סוג הספר, למשל: רומן, מתח, מד"ב]
+target_audience: [הכנס כאן את קהל היעד, למשל: מבוגרים, בני נוער, חובבי פנטזיה]
+language: [הכנס כאן את שפת הכתיבה]
+target_total_word_count: [הכנס כאן את טווח המילים הרצוי]
+target_chapter_count: [הכנס כאן את מספר הפרקים הרצוי]
+target_words_per_chapter: [הכנס כאן את טווח המילים המומלץ לפרק]
+
+# PURPOSE & PROMISE
+core_promise: [הכנס כאן את ההבטחה המרכזית של הספר - מה הקורא יקבל בסוף]
+one_sentence_pitch: [הכנס כאן משפט תמציתי אחד שמתאר את עלילת הספר]
+
+# VOICE & STYLE GUIDE
+point_of_view: [הכנס כאן את נקודת התצפית, למשל: first person, third person limited]
+tense: [הכנס כאן את הזמן הדקדוקי, למשל: past, present]
+tone: [הכנס כאן את האווירה והטון, למשל: אפל, קליל, מותח, מלנכולי]
+formality_level: [הכנס כאן את רמת הפורמליות, למשל: casual, formal]
+sentence_complexity: [הכנס כאן את מורכבות המשפטים, למשל: simple, medium, complex]
+regional_spelling: [הכנס כאן את הניב הלשוני, למשל: American, British]
+things_to_avoid: [הכנס כאן דברים שצריך להימנע מהם בכתיבה]
+
+# STRUCTURE / OUTLINE
+overall_arc: [הכנס כאן תיאור קצר של הקשת העלילתית הכללית של הספר]
+
+# CONSTRAINTS & NON-NEGOTIABLES
+must_include: [הכנס כאן אלמנטים חובה שיופיעו בספר]
+must_avoid: [הכנס כאן אלמנטים שאסורים בספר]
+accuracy_requirements: [הכנס כאן דרישות דיוק, אם ישנן]
+
+# DEFINITION OF DONE
+chapter_level: [הגדר מה נחשב לפרק מושלם]
+book_level: [הגדר מה נחשב לספר מוגמר]
+
+# === NOVEL MODULE ===
+
+# CHARACTERS
+- name: [הכנס כאן שם הדמות]
+  role: [הכנס כאן תפקיד הדמות, למשל: protagonist, antagonist, sidekick]
+  external_goal: [הכנס כאן המטרה החיצונית של הדמות]
+  internal_need: [הכנס כאן הצורך הפנימי/הרגשי של הדמות]
+  flaw/wound: [הכנס כאן החולשה או הפצע הרגשי של הדמות]
+  voice_notes: [הכנס כאן הערות על איך הדמות מדברת/חושבת]
+  arc: [הכנס כאן את מסלול ההתפתחות של הדמות במהלך העלילה]
+
+# WORLD / SETTING
+time_period_and_place: [הכנס כאן את הזמן והמקום בהם מתרחשת העלילה]
+world_rules: [הכנס כאן חוקי העולם, למשל: ריאליסטי, קוסמות קיימות, טכנולוגיה עתידנית]
+sensory_palette: [הכנס כאן תיאור תחושות, ריחות, צבעים ומרקמים שיאפיינו את העולם]
+
+# PLOT
+central_conflict: [הכנס כאן את הקונפליקט המרכזי של העלילה]
+stakes: [הכנס כאן מה נמצא על הכף אם הגיבור ייכשל]
+subplots: [הכנס כאן תתי-עלילות שילוו את הסיפור הראשי]
+themes: [הכנס כאן נושאים מרכזיים שיחזרו על עצמם בספר, למשל: משפחה, זהות, אהבה, אובדן]
