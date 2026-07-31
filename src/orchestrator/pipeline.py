@@ -53,6 +53,16 @@ class PipelineOrchestrator:
         except Exception as e:
             print(f"⚠️ שגיאה בשמירה: {e}")
     
+    def _estimate_max_tokens(self, word_target: int, include_notes: bool = False) -> int:
+        """מחשב max_tokens בטוח ליעד מילים נתון, כדי לא לחתוך תשובות בספרים עם
+        פרקים ארוכים. tokens_per_word=1.6 הוא מרווח ביטחון (מילה אנגלית ≈ 1.3 טוקן).
+        include_notes=True מוסיף מקום להערות/החלטות עורך שמצורפות לטקסט המלא."""
+        tokens_per_word = 1.6
+        base = int(word_target * tokens_per_word)
+        if include_notes:
+            base = int(base * 1.4) + 400
+        return min(max(base + 300, 1024), 8000)  # תקרה 8000 = המקסימום הנתמך ע"י DeepSeek
+
     def _call_ai(self, prompt: str, system_prompt: str = None, max_tokens: int = 4096) -> str:
         print(f"   🤖 Calling AI...")
         response = self.provider.generate(
@@ -61,7 +71,25 @@ class PipelineOrchestrator:
             max_tokens=max_tokens,
             temperature=0.7
         )
+        if getattr(response, "was_truncated", False):
+            print(f"   ⚠️ AI response was truncated (finish_reason=length, "
+                  f"completion_tokens={response.completion_tokens}). Consider raising max_tokens.")
         return response.content
+
+    def _call_ai_full(self, prompt: str, system_prompt: str = None, max_tokens: int = 4096):
+        """כמו _call_ai, אבל מחזירה את אובייקט ה-ProviderResponse המלא (כולל finish_reason/was_truncated),
+        לשימוש במקומות שצריכים לזהות חיתוך תשובה, כמו יצירת המתווה."""
+        print(f"   🤖 Calling AI...")
+        response = self.provider.generate(
+            prompt=prompt,
+            system_prompt=system_prompt,
+            max_tokens=max_tokens,
+            temperature=0.7
+        )
+        if getattr(response, "was_truncated", False):
+            print(f"   ⚠️ AI response was truncated (finish_reason=length, "
+                  f"completion_tokens={response.completion_tokens}). Consider raising max_tokens.")
+        return response
     
     def _extract_text_from_response(self, response: str, chapter_number: int = None) -> str:
         """חילוץ טקסט מתשובת AI"""
@@ -79,14 +107,23 @@ class PipelineOrchestrator:
         
         for pattern in patterns:
             if pattern in text:
-                parts = text.split(pattern)
+                parts = text.split(pattern, 1)
                 if len(parts) > 1:
-                    text = parts[1].strip()
-                    lines = text.split('\n')
-                    for i, line in enumerate(lines):
-                        if line.strip().startswith("Chapter") or line.strip().startswith("---"):
-                            text = '\n'.join(lines[i+1:])
-                            break
+                    remainder = parts[1]
+                    # השורה הראשונה מיד אחרי התבנית היא תמיד שורת הכותרת
+                    # (למשל " 1: Chapter Title---") - תמיד מדלגים עליה, ותו לא.
+                    # (הגרסה הקודמת חיפשה שורה שמתחילה ב-"Chapter" או "---" כדי
+                    #  לזהות את שורת הכותרת, אבל אם שורת הכותרת בפועל לא מתחילה
+                    #  באחד מאלה, הלולאה ממשיכה בטעות עד לשורת ה-"---" שסוגרת את
+                    #  הפרק בסופו - וחותכת את כל תוכן הפרק.)
+                    if '\n' in remainder:
+                        _, text = remainder.split('\n', 1)
+                    else:
+                        text = ""
+                    text = text.strip()
+                # מספיקה התאמה אחת - לא ממשיכים לבדוק תבניות נוספות על טקסט
+                # שכבר עבר עיבוד, כדי לא לחתוך שוב בטעות
+                break
         
         if chapter_number and f"---CHAPTER {chapter_number}" in text:
             lines = text.split('\n')
@@ -95,6 +132,12 @@ class PipelineOrchestrator:
                     text = '\n'.join(lines[i+1:])
                     break
         
+        # מסירים שורת "---" בודדת שנשארת בסוף הטקסט (סוגר הפרק)
+        lines = text.split('\n')
+        while lines and lines[-1].strip() in ("---", ""):
+            lines.pop()
+        text = '\n'.join(lines)
+        
         if "VERDICT:" in text or "ISSUES:" in text or "OVERALL NOTE:" in text:
             return ""
         
@@ -102,48 +145,92 @@ class PipelineOrchestrator:
     
     def generate_outline(self) -> Dict:
         print("📋 Generating outline...")
-        
+
         bible = self.project.bible or "{}"
         chapter_count = self.project.target_chapter_count or 5
         words_per_chapter = self.project.target_words_per_chapter or 1000
-        
-        prompt = OUTLINE_GENERATOR_PROMPT.format(
-            bible=bible,
-            chapter_count=chapter_count,
-            words_per_chapter=words_per_chapter
-        )
-        
-        response = self._call_ai(prompt)
-        
-        try:
-            json_match = re.search(r'\{.*\}', response, re.DOTALL)
-            if json_match:
-                outline = json.loads(json_match.group())
-                self.project.outline = json.dumps(outline, ensure_ascii=False)
-                self._save_project()
-                print(f"   ✅ Outline created with {len(outline.get('chapters', []))} chapters")
-                return outline
-        except:
-            pass
-        
-        print("   ⚠️ Failed to parse outline, creating default")
+
+        # ===== צ'אנקים =====
+        # ספרים עם הרבה פרקים (למשל 77) לא יכולים לקבל מתווה מפורט בקריאת AI
+        # אחת - זה חורג בקלות ממגבלת הפלט של DeepSeek (עד 8K טוקנים). מייצרים
+        # את המתווה בקבוצות של עד BATCH_SIZE פרקים בכל קריאה, ומאחדים בסוף.
+        BATCH_SIZE = 15
+        MAX_OUTPUT_TOKENS = 8000  # התקרה המרבית הנתמכת ע"י DeepSeek
+
+        all_chapters = []
+        chapter_start = 1
+        while chapter_start <= chapter_count:
+            chapter_end = min(chapter_start + BATCH_SIZE - 1, chapter_count)
+
+            # הקשר קצר מהפרקים שכבר תוכננו, כדי לשמור על רצף עלילתי בין הצ'אנקים
+            if all_chapters:
+                context_lines = [
+                    f"Chapter {c.get('number')}: {c.get('title', '')} — {c.get('purpose', '')}"
+                    for c in all_chapters
+                ]
+                previous_chapters_context = (
+                    "=== CHAPTERS ALREADY PLANNED (for continuity — do not repeat these beats) ===\n"
+                    + "\n".join(context_lines)
+                )
+            else:
+                previous_chapters_context = ""
+
+            prompt = OUTLINE_GENERATOR_PROMPT.format(
+                bible=bible,
+                chapter_count=chapter_count,
+                chapter_start=chapter_start,
+                chapter_end=chapter_end,
+                words_per_chapter=words_per_chapter,
+                previous_chapters_context=previous_chapters_context
+            )
+
+            print(f"   📦 Outline batch: chapters {chapter_start}-{chapter_end} of {chapter_count}")
+            response = self._call_ai_full(prompt, max_tokens=MAX_OUTPUT_TOKENS)
+
+            if response.was_truncated:
+                print(f"   ⚠️ Outline batch {chapter_start}-{chapter_end} response was TRUNCATED "
+                      f"(finish_reason=length, completion_tokens={response.completion_tokens}). "
+                      f"JSON parsing may fail for this batch.")
+
+            try:
+                json_match = re.search(r'\{.*\}', response.content, re.DOTALL)
+                if not json_match:
+                    raise ValueError("No JSON object found in response")
+                batch_data = json.loads(json_match.group())
+                batch_chapters = batch_data.get("chapters", [])
+                if not batch_chapters:
+                    raise ValueError("Parsed JSON but 'chapters' list is empty")
+                all_chapters.extend(batch_chapters)
+                print(f"      ✅ Parsed {len(batch_chapters)} chapters for this batch")
+            except Exception as e:
+                print(f"      ❌ Failed to parse outline batch {chapter_start}-{chapter_end}: {e}")
+                print(f"      ⚠️ Falling back to placeholder chapters for this batch only")
+                for i in range(chapter_start, chapter_end + 1):
+                    all_chapters.append({
+                        "number": i,
+                        "title": f"Chapter {i}",
+                        "purpose": "TBD",
+                        "characters": [],
+                        "key_beats": [],
+                        "word_count_target": words_per_chapter,
+                        "sets_up": []
+                    })
+
+            chapter_start = chapter_end + 1
+
+        # מספרים מחדש ברצף למקרה שה-AI לא החזיר number תואם, ומחשבים את הסכום בפייתון
+        # (ולא בתוך הפרומפט - שם זה גרם לקריסה קודם, כי .format() לא תומך בביטויים חשבוניים)
+        for idx, ch in enumerate(all_chapters, 1):
+            ch["number"] = idx
+
         outline = {
-            "chapters": [
-                {
-                    "number": i,
-                    "title": f"Chapter {i}",
-                    "purpose": "TBD",
-                    "characters": [],
-                    "key_beats": [],
-                    "word_count_target": words_per_chapter,
-                    "sets_up": []
-                } for i in range(1, chapter_count + 1)
-            ],
-            "total_chapters": chapter_count,
-            "total_word_count": chapter_count * words_per_chapter
+            "chapters": all_chapters,
+            "total_chapters": len(all_chapters),
+            "total_word_count": len(all_chapters) * words_per_chapter
         }
         self.project.outline = json.dumps(outline, ensure_ascii=False)
         self._save_project()
+        print(f"   ✅ Outline complete: {len(all_chapters)} chapters total")
         return outline
     
     def write_chapter(self, chapter_number: int, chapter_data: Dict) -> str:
@@ -175,8 +262,7 @@ class PipelineOrchestrator:
         
         prompt += outline_instruction
         
-        response = self._call_ai(prompt)
-        
+        response = self._call_ai(prompt, max_tokens=self._estimate_max_tokens(target_words))
         chapter_text = self._extract_text_from_response(response, chapter_number)
         word_count = len(chapter_text.split())
         print(f"   📝 Chapter written: {word_count} words")
@@ -228,7 +314,8 @@ class PipelineOrchestrator:
                     story_state=story_state
                 )
                 
-                writer_response = self._call_ai(revise_prompt)
+                word_target = max(len(current_text.split()), self.project.target_words_per_chapter or 1000)
+                writer_response = self._call_ai(revise_prompt, max_tokens=self._estimate_max_tokens(word_target, include_notes=True))
                 revised_text = self._extract_text_from_response(writer_response)
                 
                 if not revised_text or len(revised_text.strip()) < 50:
@@ -278,7 +365,7 @@ class PipelineOrchestrator:
                     editor_notes=editor_response
                 )
                 
-                writer_response = self._call_ai(revise_prompt)
+                writer_response = self._call_ai(revise_prompt, max_tokens=self._estimate_max_tokens(max(len(current_text.split()), self.project.target_words_per_chapter or 1000), include_notes=True))
                 revised_text = self._extract_text_from_response(writer_response)
                 
                 if not revised_text or len(revised_text.strip()) < 50:
@@ -336,13 +423,29 @@ class PipelineOrchestrator:
     def _get_chapter_summaries(self) -> str:
         if not self.chapters:
             return "No previous chapters"
-        
+
+        # ===== הגבלת גודל =====
+        # בספרים עם הרבה פרקים (למשל 77), תקציר מלא (200 מילים) מכל פרק שנכתב
+        # עד כה היה מנפח את הפרומפט עד לחריגה ממגבלת הטוקנים לקראת סוף הספר.
+        # רק ה-RECENT_FULL הפרקים האחרונים מקבלים תקציר מפורט; פרקים ישנים
+        # יותר מקבלים רק כותרת, כדי לשמור על המשכיות בלי להתפוצץ בגודל.
+        RECENT_FULL = 3
+
         summaries = []
-        for ch in self.chapters:
+        older = self.chapters[:-RECENT_FULL] if len(self.chapters) > RECENT_FULL else []
+        recent = self.chapters[-RECENT_FULL:] if len(self.chapters) > RECENT_FULL else self.chapters
+
+        if older:
+            summaries.append("=== EARLIER CHAPTERS (titles only, for reference) ===")
+            for ch in older:
+                summaries.append(f"Chapter {ch['number']}: {ch['title']}")
+            summaries.append("\n=== MOST RECENT CHAPTERS (detailed, for direct continuity) ===")
+
+        for ch in recent:
             words = ch['text'].split()
             preview = ' '.join(words[:200])
             summaries.append(f"Chapter {ch['number']}: {ch['title']}\n{preview}...\n")
-        
+
         return "\n".join(summaries)
     
     def _quality_check(self) -> bool:

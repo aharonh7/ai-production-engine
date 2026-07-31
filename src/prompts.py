@@ -69,12 +69,30 @@ CRITICAL: You are writing a NOVEL CHAPTER, not a summary, not an outline, not a 
 - Description of the setting and atmosphere
 - Narrative flow from beginning to end
 
+=== BOOK BIBLE ===
+{bible}
+
+=== FULL OUTLINE ===
+{outline}
+
+=== STORY STATE (current as of end of last approved chapter) ===
+{story_state}
+
+=== PREVIOUS CHAPTER SUMMARIES ===
+{chapter_summaries}
+
+=== THIS CHAPTER ===
+Chapter number: {chapter_number}
+Chapter title: {chapter_title}
+This chapter's beat in the outline: {chapter_beat}
+
 Target word count for this chapter: {target_word_count} words. Write a complete, fully developed chapter of approximately this length.
 
 RULES:
 - Follow the Book Bible's POV, tense, tone, and style guide exactly.
 - Follow the Full Outline's beat for this chapter faithfully.
 - Do not contradict anything in STORY STATE.
+- Continue naturally from the PREVIOUS CHAPTER SUMMARIES — do not repeat events, and do not contradict established facts.
 - Write ONLY the chapter text. No commentary, no meta-explanation, no bullet points, no summaries.
 """ + AI_STYLE_GUARDRAILS + """
 OUTPUT FORMAT:
@@ -288,21 +306,25 @@ CHANGE LOG:
 # 8. OUTLINE GENERATOR
 # ============================================
 OUTLINE_GENERATOR_PROMPT = """
-Based on this book bible, create a detailed chapter outline.
+Based on this book bible, create a detailed chapter outline for chapters {chapter_start} through {chapter_end} (out of {chapter_count} total chapters in the book).
 
 Book Bible:
 {bible}
 
+{previous_chapters_context}
+
 Requirements:
-- Total chapters: {chapter_count}
+- This batch: chapters {chapter_start} to {chapter_end}
 - Words per chapter: approximately {words_per_chapter} words
 - Each chapter must contain specific scenes, character moments, dialogue opportunities, and plot developments
+- Chapters must continue the story logically from whatever came before (see context above, if any)
+- Do NOT repeat plot beats already used in earlier chapters
 
-Output in valid JSON format:
+Output ONLY valid JSON, no other text, in this exact format:
 {{
   "chapters": [
     {{
-      "number": 1,
+      "number": {chapter_start},
       "title": "Chapter Title",
       "purpose": "What this chapter accomplishes",
       "characters": ["Character1", "Character2"],
@@ -310,9 +332,7 @@ Output in valid JSON format:
       "word_count_target": {words_per_chapter},
       "sets_up": ["Plot element 1", "Plot element 2"]
     }}
-  ],
-  "total_chapters": {chapter_count},
-  "total_word_count": {chapter_count * words_per_chapter}
+  ]
 }}
 """
 

@@ -58,7 +58,8 @@ class DeepSeekAdapter(ProviderAdapter):
                 prompt_tokens=response.usage.prompt_tokens,
                 completion_tokens=response.usage.completion_tokens,
                 total_tokens=response.usage.total_tokens,
-                cost=actual_cost
+                cost=actual_cost,
+                finish_reason=response.choices[0].finish_reason
             )
         except Exception as e:
             raise Exception(f"DeepSeek error: {e}")

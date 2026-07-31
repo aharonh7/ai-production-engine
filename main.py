@@ -70,12 +70,5 @@ if ui_dir.exists():
 async def health():
     return {"status": "healthy", "providers": provider_registry.list_providers()}
 
-@app.get("/budget")
-async def get_budget():
-    adapter = provider_registry.get("deepseek")
-    if adapter:
-        return adapter.get_status()
-    return {"error": "DeepSeek not found"}
-
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8000)
