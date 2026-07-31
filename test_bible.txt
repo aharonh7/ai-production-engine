@@ -4,8 +4,8 @@ book_type: childrens
 target_audience: kids, aducational
 language: English
 target_total_word_count: 20000-30000
-target_chapter_count: 55
-target_words_per_chapter: 2000-900
+target_chapter_count: 77
+target_words_per_chapter: 333-900
 
 # PURPOSE & PROMISE
 core_promise: A woman returns to her childhood home to find a missing key that unlocks a family secret.
