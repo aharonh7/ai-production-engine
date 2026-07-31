@@ -90,20 +90,38 @@ def parse_bible(bible_text: str) -> dict:
         result["max_words"] = int(match.group(2))
     
     # === 6. מספר פרקים ===
-    match = re.search(r'target_chapter_count:\s*(\d+)', bible_text, re.IGNORECASE)
+    # Try to get chapter count range
+    match = re.search(r'target_chapter_count:\s*(\d+)\s*[–-]\s*(\d+)', bible_text, re.IGNORECASE)
     if match:
-        result["chapter_count"] = int(match.group(1))
-    
-    # === 7. מילים לפרק ===
-    match = re.search(r'target_words_per_chapter:\s*(\d+)-?(\d+)?', bible_text, re.IGNORECASE)
-    if match:
-        if match.group(2):
-            a, b = int(match.group(1)), int(match.group(2))
-            # תומכים גם במקרה שהטווח נכתב בסדר הפוך (למשל "2000-900")
-            result["min_words_per_chapter"] = min(a, b)
-            result["max_words_per_chapter"] = max(a, b)
-            result["words_per_chapter"] = (a + b) // 2
+        target_chapter_count_min = int(match.group(1))
+        target_chapter_count_max = int(match.group(2))
+        result["chapter_count"] = (target_chapter_count_min + target_chapter_count_max) // 2
+    else:
+        match = re.search(r'target_chapter_count:\s*(\d+)', bible_text, re.IGNORECASE)
+        if match:
+            result["chapter_count"] = int(match.group(1))
         else:
+            # לא נמצא - נחשב לפי מילים לפרק ומילים לספר
+            if (result.get("min_words") and result.get("max_words") and 
+                result.get("min_words_per_chapter") and result.get("max_words_per_chapter")):
+                min_chapters = result["min_words"] // result["max_words_per_chapter"]
+                max_chapters = result["max_words"] // result["min_words_per_chapter"]
+                result["chapter_count"] = (min_chapters + max_chapters) // 2
+            else:
+                result["chapter_count"] = 30  # ברירת מחדל
+
+    # === 7. מילים לפרק ===
+    # Try range with dash or en-dash
+    match = re.search(r'target_words_per_chapter:\s*(\d+)\s*[–-]\s*(\d+)', bible_text, re.IGNORECASE)
+    if match:
+        a, b = int(match.group(1)), int(match.group(2))
+        result["min_words_per_chapter"] = min(a, b)
+        result["max_words_per_chapter"] = max(a, b)
+        result["words_per_chapter"] = (a + b) // 2
+    else:
+        # Try single number
+        match = re.search(r'target_words_per_chapter:\s*(\d+)', bible_text, re.IGNORECASE)
+        if match:
             result["min_words_per_chapter"] = int(match.group(1))
             result["max_words_per_chapter"] = int(match.group(1))
             result["words_per_chapter"] = int(match.group(1))
