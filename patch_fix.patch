@@ -1,0 +1,35 @@
+From: System <system@example.com>
+Date: Fri, 31 Jul 2026 10:00:00 +0000
+Subject: [PATCH] Fix Bible fields
+
+---
+ TEST BIBLE_ The Curse We Chose.md | 16 ++++++++--------
+ 1 file changed, 8 insertions(+), 8 deletions(-)
+
+diff --git a/TEST BIBLE_ The Curse We Chose.md b/TEST BIBLE_ The Curse We Chose.md
+--- a/TEST BIBLE_ The Curse We Chose.md
++++ b/TEST BIBLE_ The Curse We Chose.md
+@@ -1,16 +1,16 @@
+ # BOOK METADATA
+ title: The Curse We Chose
+-book type: novel, romance, gothic romantasy, dark romance
+-one sentence pitch: After discovering that Silas Vane was paid to deliver her alive to the family hunting her, criminal defence attorney Nora Blake travels to his isolated island estate to confront him, only to learn that he engineered her escape, trapped her on Thorn, and may be the only enemy ruthless enough to keep her alive
+-target words per chapter: 2,500â€“3,000
+-target total word count: 75,000â€“90,000
+-target chapter count: 30â€“34
+-point of view: third person limited
++book_type: novel, romance, gothic romantasy, dark romance
++one_sentence_pitch: After discovering that Silas Vane was paid to deliver her alive to the family hunting her, criminal defence attorney Nora Blake travels to his isolated island estate to confront him, only to learn that he engineered her escape, trapped her on Thorn, and may be the only enemy ruthless enough to keep her alive
++target_words_per_chapter: 2,500â€“3,000
++target_total_word_count: 75,000â€“90,000
++target_chapter_count: 30â€“34
++point_of_view: third person limited
+ tense: past
+ tone: dark, tense, gothic, intimate, raw, bittersweet, ironic
+-target audience: adults, dark romance readers, romantasy readers
++target_audience: adults, dark romance readers, romantasy readers
+ language: English
+ 
+ # PURPOSE & PROMISE
+-core promise: Nora does not arrive seeking rescue. She arrives seeking evidence and leverage against the man she believes is hunting her. The emotional promise is not that the hero is secretly harmless. It is that the heroine sees exactly what he has done, refuses to excuse it, and still chooses what their relationship becomes. Silas becomes worthy of a relationship only by surrendering information, control, and finally the power to keep her. Their relationship begins under explicit chosen terms.
++core_promise: Nora does not arrive seeking rescue. She arrives seeking evidence and leverage against the man she believes is hunting her. The emotional promise is not that the hero is secretly harmless. It is that the heroine sees exactly what he has done, refuses to excuse it, and still chooses what their relationship becomes. Silas becomes worthy of a relationship only by surrendering information, control, and finally the power to keep her. Their relationship begins under explicit chosen terms.
