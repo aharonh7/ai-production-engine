@@ -94,11 +94,21 @@ async function parseBibleAndShowFields(bibleText) {
         document.getElementById('extractedCorePromise').value = data.core_promise || '';
         document.getElementById('extractedPitch').value = data.one_sentence_pitch || '';
         
-        // ===== חשב את המילים לפרק (מהטווח הכולל ÷ מספר הפרקים) ואת הממוצע המוצג =====
-        // (calculateWordsPerChapter קוראת את extractedMinWords/extractedMaxWords/extractedChapterCount
-        //  שהוגדרו זה עתה, ומעדכנת את minWords/maxWords ואת extractedWordsPerChapter בהתאם -
-        //  היא לא נוגעת בטווח הכולל, כדי לא ליצור סחיפה מעיגול)
-        calculateWordsPerChapter();
+        // ===== מילים לפרק =====
+        // אם הבייבל הגדיר טווח מפורש (target_words_per_chapter: X-Y) - הוא מקור האמת,
+        // ואין להחליף אותו בחישוב "טווח כולל ÷ מספר פרקים". רק אם הבייבל לא הגדיר
+        // טווח מפורש, נופלים לחישוב המחולק.
+        if (data.min_words_per_chapter != null && data.max_words_per_chapter != null) {
+            document.getElementById('minWords').value = data.min_words_per_chapter;
+            document.getElementById('maxWords').value = data.max_words_per_chapter;
+            document.getElementById('extractedWordsPerChapter').value =
+                Math.round((data.min_words_per_chapter + data.max_words_per_chapter) / 2);
+            log('📐 טווח מילים לפרק נלקח ישירות מהבייבל (target_words_per_chapter): ' +
+                data.min_words_per_chapter + '-' + data.max_words_per_chapter);
+        } else {
+            // אין טווח מפורש בבייבל - מחשבים הערכה מתוך טווח כולל ÷ מספר פרקים
+            calculateWordsPerChapter();
+        }
         
         document.getElementById('bibleFields').classList.add('show');
         document.getElementById('fillFromBibleBtn').style.display = 'block';

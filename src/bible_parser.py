@@ -16,6 +16,8 @@ def parse_bible(bible_text: str) -> dict:
         "max_words": 5000,
         "chapter_count": 5,
         "words_per_chapter": 1000,
+        "min_words_per_chapter": None,
+        "max_words_per_chapter": None,
         "pov": "",
         "tense": "",
         "tone": "",
@@ -96,8 +98,14 @@ def parse_bible(bible_text: str) -> dict:
     match = re.search(r'target_words_per_chapter:\s*(\d+)-?(\d+)?', bible_text, re.IGNORECASE)
     if match:
         if match.group(2):
-            result["words_per_chapter"] = (int(match.group(1)) + int(match.group(2))) // 2
+            a, b = int(match.group(1)), int(match.group(2))
+            # תומכים גם במקרה שהטווח נכתב בסדר הפוך (למשל "2000-900")
+            result["min_words_per_chapter"] = min(a, b)
+            result["max_words_per_chapter"] = max(a, b)
+            result["words_per_chapter"] = (a + b) // 2
         else:
+            result["min_words_per_chapter"] = int(match.group(1))
+            result["max_words_per_chapter"] = int(match.group(1))
             result["words_per_chapter"] = int(match.group(1))
     
     # === 8. POV ===
