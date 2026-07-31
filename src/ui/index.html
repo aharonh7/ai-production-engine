@@ -169,8 +169,13 @@
 </head>
 <body>
 <div class="container">
-    <h1>📖 AI Production Engine</h1>
-    <div class="subtitle">מערכת לייצור ספרים אוטומטי</div>
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+        <div>
+            <h1>📖 AI Production Engine</h1>
+            <div class="subtitle">מערכת לייצור ספרים אוטומטי</div>
+        </div>
+        <button type="button" onclick="shutdownServer()" style="background: #8b0000; border: none; color: white; padding: 10px 18px; border-radius: 6px; cursor: pointer; font-size: 14px; height: fit-content;">⛔ יציאה - סגור שרת</button>
+    </div>
     
     <!-- תקציב -->
     <div class="card">
@@ -226,7 +231,10 @@
                     <span style="background: #2a2a2a; padding: 5px 10px; border-radius: 4px; font-size: 14px;">📄 </span>
                     <button type="button" onclick="removeBible()" style="background: #8b0000; border: none; color: white; padding: 2px 10px; border-radius: 4px; cursor: pointer;">הסר</button>
                 </div>
-                
+
+                <!-- ===== כפתור מילוי הפרויקט - ממוקם מייד מתחת לטעינת הבייבל ===== -->
+                <button type="button" id="fillFromBibleBtn" onclick="fillProjectFromBible()" style="display: none; width: 100%; padding: 10px; margin-top: 10px; background: #00aa44; border: none; color: white; font-size: 14px; border-radius: 6px; cursor: pointer;">✅ מלא את הפרויקט מהנתונים האלה</button>
+
                 <!-- ===== שדות שימלאו מהבייבל ===== -->
                 <div id="bibleFields" class="bible-fields">
                     <h3>📊 נתונים מחולצים מהבייבל</h3>
@@ -300,8 +308,6 @@
                         <label>One Sentence Pitch (תיאור קצר)</label>
                         <textarea id="extractedPitch" rows="2" style="background: #111; color: #fff;"></textarea>
                     </div>
-                    
-                    <button type="button" onclick="fillProjectFromBible()" style="width: 100%; padding: 10px; background: #00aa44; border: none; color: white; font-size: 14px; border-radius: 6px; cursor: pointer;">✅ מלא את הפרויקט מהנתונים האלה</button>
                 </div>
             </div>
             

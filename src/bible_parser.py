@@ -32,14 +32,44 @@ def parse_bible(bible_text: str) -> dict:
         result["title"] = match.group(1).strip()
     
     # === 2. סוג ספר ===
-    if "novel" in bible_text.lower() or "fiction" in bible_text.lower():
-        result["book_type"] = "novel"
-    elif "children" in bible_text.lower():
-        result["book_type"] = "childrens"
-    elif "technical" in bible_text.lower() or "instructional" in bible_text.lower():
-        result["book_type"] = "technical"
-    elif "self-help" in bible_text.lower() or "personal development" in bible_text.lower():
-        result["book_type"] = "selfhelp"
+    # קודם כל מנסים לקרוא את השדה המפורש book_type: מהבייבל.
+    # רק אם השדה לא קיים, נופלים חזרה לזיהוי לפי מילות מפתח בטקסט החופשי.
+    # (הבדיקה הישנה חיפשה "novel"/"fiction" בכל הטקסט, כולל כותרות
+    #  כמו "# === NOVEL MODULE ===", ולכן תמיד זיהתה novel בטעות
+    #  גם כשה-book_type המפורש היה childrens/technical/selfhelp.)
+    match = re.search(r'^book_type:\s*(.+)$', bible_text, re.IGNORECASE | re.MULTILINE)
+    explicit_book_type = match.group(1).strip().lower() if match else None
+
+    KNOWN_TYPES = {"novel", "childrens", "technical", "selfhelp"}
+    # תמיכה בכינויים נפוצים שעלולים להיכתב בבייבל
+    TYPE_ALIASES = {
+        "children": "childrens",
+        "children's": "childrens",
+        "kids": "childrens",
+        "self-help": "selfhelp",
+        "self_help": "selfhelp",
+        "personal development": "selfhelp",
+        "fiction": "novel",
+        "instructional": "technical",
+    }
+
+    if explicit_book_type:
+        normalized = TYPE_ALIASES.get(explicit_book_type, explicit_book_type)
+        if normalized in KNOWN_TYPES:
+            result["book_type"] = normalized
+        else:
+            # ערך לא מוכר בשדה המפורש - נופלים לזיהוי לפי מילות מפתח
+            explicit_book_type = None
+
+    if not explicit_book_type:
+        if "children" in bible_text.lower():
+            result["book_type"] = "childrens"
+        elif "technical" in bible_text.lower() or "instructional" in bible_text.lower():
+            result["book_type"] = "technical"
+        elif "self-help" in bible_text.lower() or "personal development" in bible_text.lower():
+            result["book_type"] = "selfhelp"
+        elif "novel" in bible_text.lower() or "fiction" in bible_text.lower():
+            result["book_type"] = "novel"
     
     # === 3. קהל יעד ===
     match = re.search(r'target_audience:\s*(.+)', bible_text, re.IGNORECASE)

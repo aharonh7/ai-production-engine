@@ -100,6 +100,7 @@ async function parseBibleAndShowFields(bibleText) {
         calculateWordsPerChapter();
         
         document.getElementById('bibleFields').classList.add('show');
+        document.getElementById('fillFromBibleBtn').style.display = 'block';
         
         log('✅ בייבל נ przeanalizowany: ' + data.title + ' (' + data.chapter_count + ' פרקים, ' + data.min_words + '-' + data.max_words + ' מילים)');
     } catch (err) {
@@ -130,6 +131,7 @@ function removeBible() {
     document.getElementById('biblePreview').style.display = 'none';
     document.getElementById('bibleFields').classList.remove('show');
     document.getElementById('bibleFile').value = '';
+    document.getElementById('fillFromBibleBtn').style.display = 'none';
     log('🗑️ בייבל הוסר');
 }
 
@@ -194,6 +196,7 @@ const data = {
         parsedBibleData = null;
         document.getElementById('biblePreview').style.display = 'none';
         document.getElementById('bibleFields').classList.remove('show');
+        document.getElementById('fillFromBibleBtn').style.display = 'none';
         loadProjects();
     } catch (err) {
         log('❌ שגיאה ביצירה: ' + err.message);
@@ -248,6 +251,8 @@ function renderProjects(projects) {
                     ${p.state === 'completed' ? `
                         <button class="btn btn-sm btn-warning" onclick="exportBook('${p.id}', 'docx')">📤 DOCX</button>
                         <button class="btn btn-sm btn-warning" onclick="exportBook('${p.id}', 'epub')">📤 EPUB</button>
+                        <button class="btn btn-sm btn-warning" onclick="exportBook('${p.id}', 'pdf')">📤 PDF</button>
+                        <button class="btn btn-sm btn-warning" onclick="exportBook('${p.id}', 'all')">📦 הכל</button>
                     ` : ''}
                 </div>
             </li>
@@ -356,11 +361,36 @@ async function exportBook(projectId, format) {
             throw new Error(error.detail || 'Export failed');
         }
         const result = await response.json();
-        log('✅ ' + result.message);
+        if (result.files) {
+            // ייצוא לכל הפורמטים - מציגים את כל הנתיבים
+            Object.entries(result.files).forEach(([fmt, path]) => {
+                log('✅ ' + fmt.toUpperCase() + ' נשמר: ' + path);
+            });
+        } else {
+            log('✅ ' + result.message + ' — נשמר ב: ' + result.file);
+        }
+        alert('✅ הקובץ נשמר בתיקיית exports/ בשרת:\n' + (result.file || Object.values(result.files || {}).join('\n')));
     } catch (err) {
         log('❌ שגיאה בייצוא: ' + err.message);
         alert('❌ שגיאה: ' + err.message);
     }
+}
+
+// ============================================
+// סגירת שרת
+// ============================================
+async function shutdownServer() {
+    if (!confirm('⛔ לסגור את השרת? כל תהליך כתיבה פעיל ייפסק, ותצטרך להריץ מחדש כדי להמשיך לעבוד.')) {
+        return;
+    }
+    log('⛔ שולח בקשת סגירה לשרת...');
+    try {
+        await fetch('/api/shutdown', { method: 'POST' });
+    } catch (err) {
+        // ברגע שהשרת נסגר, הבקשה עצמה עלולה להיכשל / להיקטע - וזה תקין וצפוי
+    }
+    log('⛔ השרת נסגר. אפשר לסגור את הדפדפן.');
+    document.body.innerHTML = '<div style="text-align:center; padding: 100px; color: #888; font-size: 20px;">⛔ השרת נסגר.<br>ניתן לסגור את החלון.</div>';
 }
 
 // ============================================

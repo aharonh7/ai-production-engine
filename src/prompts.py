@@ -25,6 +25,35 @@ Target word count: {target_word_count}
 Chapter outline beat: {chapter_beat}
 """
 
+# ============================================
+# SHARED STYLE GUARDRAILS - "AI TELLS" TO AVOID
+# Injected into every prompt that produces or
+# revises actual prose.
+# ============================================
+AI_STYLE_GUARDRAILS = """
+=== STYLE GUARDRAILS — WRITE LIKE A HUMAN AUTHOR, NOT LIKE AN AI ===
+Avoid the following patterns, which are common tells of AI-generated prose:
+
+PUNCTUATION:
+- NEVER use the em dash (—) or en dash (–) for any purpose, including dramatic pauses or appositives. Rewrite the sentence instead, or use a comma, period, semicolon, or parentheses.
+- Do NOT use markdown formatting of any kind in the prose (no **bold**, no _italics_, no bullet points, no headers). This is plain narrative prose only.
+
+OVERUSED "AI" VOCABULARY — do not use these words/phrases (find natural alternatives, or better, rephrase so no single word carries the weight):
+delve, tapestry, testament, boundaries, elevate, unleash, unlock, seamless, seamlessly, robust, myriad, plethora, embark, journey (as metaphor), realm, weave/weaving, intricate, nuanced, multifaceted, bustling, vibrant, whisper/whispered (as a stylistic tic), symphony (as metaphor), dance (as metaphor for non-dancing action), ever-evolving, game-changer, cutting-edge, in a world where, it's important to note, it's worth noting, needless to say, suffice to say, at the end of the day, in today's [anything], all things considered, one might argue, it goes without saying, in conclusion, in summary, to sum up, moreover, furthermore, additionally (as a paragraph opener).
+
+OVERUSED INTENSIFIERS/QUALIFIERS — vary your language instead of leaning on the same handful of words repeatedly: very, too, just, simply, quite, rather, somewhat, almost, slightly, truly, really, actually, certainly, undoubtedly, notably, remarkably, arguably, ultimately. Using one occasionally is fine; do not let any single qualifier recur more than once or twice in a chapter.
+
+STRUCTURAL TICS TO AVOID:
+- Repetitive sentence openers, especially "-ing" participial phrases ("Smiling, she..." / "Turning, he...") used more than once or twice per chapter.
+- The "not just X, but Y" or "it wasn't just about X, it was about Y" construction.
+- Rule-of-three (tricolon) lists used more than once or twice per chapter ("She felt fear, doubt, and hope").
+- Rhetorical questions used as a transition device ("But what did it mean?").
+- Cliché openers like "Little did she know..." or closers that neatly summarize the emotional takeaway of a scene.
+- Perfectly symmetrical or overly balanced sentence rhythm across a whole paragraph — vary sentence length naturally, including short, blunt sentences.
+
+The goal is prose that reads like it came from a skilled human novelist with an individual voice — specific, varied, and unpolished in the way real writing is unpolished, not smoothed into generic "AI voice."
+"""
+
 
 # ============================================
 # 1. WRITER - Drafting a Chapter
@@ -47,7 +76,7 @@ RULES:
 - Follow the Full Outline's beat for this chapter faithfully.
 - Do not contradict anything in STORY STATE.
 - Write ONLY the chapter text. No commentary, no meta-explanation, no bullet points, no summaries.
-
+""" + AI_STYLE_GUARDRAILS + """
 OUTPUT FORMAT:
 ---CHAPTER {chapter_number}: {chapter_title}---
 {{full chapter text with scenes, dialogue, and description}}
@@ -124,6 +153,7 @@ RULES:
 3. Keep the chapter length approximately the same
 4. Do NOT summarize, condense, or rewrite from scratch
 5. If you agree with a note, find the specific spot in the text and fix it
+6. While revising, do not introduce em dashes, banned AI-vocabulary, or repeated qualifiers (see style guardrails you were given when you first drafted this chapter) — if the original text already contains any, this is a good opportunity to quietly fix them too.
 
 OUTPUT FORMAT:
 NOTE-BY-NOTE DECISIONS:
@@ -144,21 +174,22 @@ You are a professional line editor. The chapter below has already passed structu
 - Consistent narrative voice, including maintaining distinct voice per POV character if the book uses multiple POVs.
 - Eliminating repetition of words/phrases in close proximity, filler words, and awkward constructions.
 - Dialogue tags and punctuation conventions consistent throughout the manuscript.
+- Actively hunting for and removing AI-writing tells (see style guardrails below). This is one of your MOST IMPORTANT jobs — treat every em dash, banned word, and overused qualifier as an error to fix, exactly like a grammar mistake.
 
 Do NOT change plot events, character decisions, or scene structure. If you notice a structural issue, note it separately under "OUT OF SCOPE — FLAG ONLY" without acting on it.
-
+""" + AI_STYLE_GUARDRAILS + """
 === BOOK BIBLE (style guide) ===
 {bible}
 
 === CHAPTER TEXT TO LINE-EDIT ===
 {chapter_text}
 
-For each change, categorize as: GRAMMAR (objective correctness — not a matter of opinion), STYLE (voice/rhythm — more subjective, explain your reasoning), or CONSISTENCY (contradicts earlier established phrasing/terminology/spelling in the Story State glossary).
+For each change, categorize as: GRAMMAR (objective correctness — not a matter of opinion), STYLE (voice/rhythm — more subjective, explain your reasoning), CONSISTENCY (contradicts earlier established phrasing/terminology/spelling in the Story State glossary), or AI_TELL (em dash, banned word/phrase, overused qualifier, or structural tic from the style guardrails).
 
 OUTPUT FORMAT:
 VERDICT: [APPROVE / REVISE]
 CHANGES:
-1. [GRAMMAR/STYLE/CONSISTENCY] Original: "..." → Suggested: "..." | Reason: ...
+1. [GRAMMAR/STYLE/CONSISTENCY/AI_TELL] Original: "..." → Suggested: "..." | Reason: ...
 2. ...
 OUT OF SCOPE — FLAG ONLY: {{if any, else "None"}}
 """
@@ -184,6 +215,7 @@ RULES:
 3. Keep the ENTIRE chapter intact - do not cut anything
 4. If you agree with a fix, find the exact spot and correct it
 5. If you reject a fix, leave that part unchanged
+6. Always apply AI_TELL fixes (em dashes, banned vocabulary, overused qualifiers) even if you're on the fence about a STYLE suggestion — these are non-negotiable.
 
 OUTPUT FORMAT:
 DECISIONS:
@@ -222,8 +254,10 @@ You are a proofreader performing the final pass on a completed, fully edited man
 - Punctuation errors
 - Missing or duplicated words
 - Incorrect capitalization
-- Formatting inconsistencies (e.g., inconsistent em-dash/quote style, extra spaces)
+- Formatting inconsistencies (e.g., inconsistent quote style, extra spaces)
 - Continuity-breaking name/spelling inconsistencies versus the glossary provided
+- Any remaining em dash (—) or en dash (–) that slipped through earlier passes — replace it with a comma, period, or parentheses as appropriate (this is a mechanical fix, not a style rewrite)
+- Any remaining markdown formatting characters (**, _, #, bullet dashes) that don't belong in prose — remove them
 
 You are given a text chunk of approximately {chunk_size} words, with a short overlapping tail from the previous chunk and head from the next chunk included for context — do NOT report or fix errors that fall entirely within the overlap regions (they'll be caught when that region is the core of an adjacent chunk); only fix errors within the CORE region, clearly marked.
 

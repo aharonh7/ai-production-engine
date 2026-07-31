@@ -95,47 +95,45 @@ class BookExporter:
         return file_path
 
     def export_pdf(self):
-        """ייצוא ל-PDF באמצעות pdfkit"""
-        try:
-            import pdfkit
-            config = pdfkit.configuration(wkhtmltopdf=r'C:\Program Files\wkhtmltopdf\bin\wkhtmltopdf.exe')
-            
-            content_html = markdown.markdown(self.content)
-            html_content = f"""
-            <!DOCTYPE html>
-            <html>
-            <head>
-                <meta charset="UTF-8">
-                <title>{self.project.name}</title>
-                <style>
-                    body {{ font-family: Arial, sans-serif; line-height: 1.6; padding: 40px; max-width: 800px; margin: auto; }}
-                    h1 {{ color: #6366f1; border-bottom: 2px solid #2a2a3a; padding-bottom: 10px; }}
-                    h2 {{ color: #a855f7; margin-top: 30px; }}
-                    h3 {{ color: #818cf8; }}
-                    .meta {{ color: #888; font-size: 0.9em; margin-bottom: 30px; }}
-                    hr {{ border: 1px solid #2a2a3a; margin: 30px 0; }}
-                </style>
-            </head>
-            <body>
-                <h1>{self.project.name}</h1>
-                <div class="meta">
-                    <p>📚 סוג: {self.project.book_type}</p>
-                    <p>📝 מילים: {len(self.content.split())}</p>
-                    <p>📅 תאריך: {datetime.now().strftime('%d/%m/%Y %H:%M')}</p>
-                </div>
-                <hr>
-                {content_html}
-            </body>
-            </html>
-            """
-            
-            file_path = self.output_dir / f"{self.base_name}.pdf"
-            pdfkit.from_string(html_content, str(file_path), configuration=config)
-            print(f"   📕 PDF: {file_path}")
-            return file_path
-        except Exception as e:
-            print(f"   ⚠️ PDF נכשל: {e}")
-            raise
+        """ייצוא ל-PDF - שיטה נטולת תלות בתוכנה חיצונית (xhtml2pdf, טהור-Python)"""
+        from xhtml2pdf import pisa
+
+        content_html = markdown.markdown(self.content)
+        html_content = f"""
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <meta charset="UTF-8">
+            <title>{self.project.name}</title>
+            <style>
+                body {{ font-family: Helvetica, Arial, sans-serif; line-height: 1.6; }}
+                h1 {{ color: #333333; border-bottom: 2px solid #999999; padding-bottom: 10px; }}
+                h2 {{ color: #555555; margin-top: 30px; }}
+                h3 {{ color: #777777; }}
+                .meta {{ color: #888888; font-size: 0.9em; margin-bottom: 30px; }}
+                hr {{ border: 1px solid #cccccc; margin: 30px 0; }}
+            </style>
+        </head>
+        <body>
+            <h1>{self.project.name}</h1>
+            <div class="meta">
+                <p>Type: {self.project.book_type}</p>
+                <p>Words: {len(self.content.split())}</p>
+                <p>Date: {datetime.now().strftime('%d/%m/%Y %H:%M')}</p>
+            </div>
+            <hr>
+            {content_html}
+        </body>
+        </html>
+        """
+
+        file_path = self.output_dir / f"{self.base_name}.pdf"
+        with open(file_path, "wb") as f:
+            result = pisa.CreatePDF(html_content, dest=f)
+        if result.err:
+            raise RuntimeError(f"PDF generation failed with {result.err} error(s)")
+        print(f"   📕 PDF: {file_path}")
+        return file_path
 
     def export_all(self):
         """ייצוא לכל הפורמטים"""

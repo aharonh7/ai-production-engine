@@ -428,7 +428,17 @@ class PipelineOrchestrator:
         
         print(f"\n✅ Book complete! {self.project.total_words} words")
         self._save_manuscript_file(manuscript)
-        
+
+        try:
+            from src.services.exporter import BookExporter
+            print("\n📦 Auto-exporting to DOCX / EPUB / PDF ...")
+            BookExporter(self.project, manuscript).export_all()
+        except Exception as e:
+            # ייצוא אוטומטי הוא bonus - אם הוא נכשל (למשל תלות חסרה),
+            # לא רוצים שזה יפיל את כל ריצת הכתיבה. ניתן תמיד לייצא
+            # ידנית דרך כפתורי הייצוא בממשק לאחר מכן.
+            print(f"   ⚠️ Auto-export failed (you can still export manually from the UI): {e}")
+
         return manuscript
     
     def _assemble_manuscript(self) -> str:

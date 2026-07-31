@@ -321,8 +321,19 @@ async def parse_bible_endpoint(data: dict):
 
 @router.post("/shutdown")
 async def shutdown():
-    import os, signal
-    os.kill(os.getpid(), signal.SIGTERM)
+    """סוגר את השרת בכוח (לחצן 'יציאה' בממשק)."""
+    import signal
+    import threading
+
+    def _kill():
+        try:
+            os.kill(os.getpid(), signal.SIGTERM)
+        except Exception:
+            pass
+        # אם התהליך עדיין חי אחרי שנייה - סוגרים בכוח, ללא תנאים
+        threading.Timer(2.0, lambda: os._exit(0)).start()
+
+    threading.Timer(0.5, _kill).start()
     return {"message": "כבוי"}
 
 @router.get("/health")
