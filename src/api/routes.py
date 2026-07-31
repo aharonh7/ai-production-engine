@@ -29,7 +29,7 @@ async def create_project(data: dict):
         max_words = data.get("max_words", 500)
         target_total_words_min = data.get("target_total_words_min", 3000)
         target_total_words_max = data.get("target_total_words_max", 5000)
-        target_chapter_count = data.get("chapter_count", 5)
+        target_chapter_count = data.get("target_chapter_count", 5)
         target_words_per_chapter = data.get("target_words_per_chapter", 1000)
         
         project = Project(
