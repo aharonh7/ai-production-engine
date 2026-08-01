@@ -280,7 +280,8 @@ async function runProject(projectId) {
     log('▶️ מפעיל הפקה לפרויקט: ' + projectId);
     try {
         const response = await fetch('/api/projects/' + projectId + '/run', {
-            method: 'POST'
+            method: 'POST',
+            headers: {'X-AIPE-Control': '1'}
         });
         if (!response.ok) {
             const error = await response.json();
@@ -396,7 +397,10 @@ async function shutdownServer() {
     }
     log('⛔ שולח בקשת סגירה לשרת...');
     try {
-        await fetch('/api/shutdown', { method: 'POST' });
+        await fetch('/api/shutdown', {
+            method: 'POST',
+            headers: {'X-AIPE-Control': '1'}
+        });
     } catch (err) {
         // ברגע שהשרת נסגר, הבקשה עצמה עלולה להיכשל / להיקטע - וזה תקין וצפוי
     }

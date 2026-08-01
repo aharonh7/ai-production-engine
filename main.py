@@ -1,7 +1,9 @@
 import os
+from ipaddress import ip_address
 import uvicorn
-from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
+from fastapi import FastAPI, Request
+from fastapi.middleware.trustedhost import TrustedHostMiddleware
+from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 from dotenv import load_dotenv
 import yaml
@@ -49,13 +51,26 @@ if os.getenv("DEEPSEEK_API_KEY"):
 
 app = FastAPI(title="AI Production Engine", version="2.0")
 
+# The UI and API are served from the same local origin. CORS is intentionally
+# not enabled: another website must not be able to operate this local app or
+# spend the configured AI budget.
 app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    TrustedHostMiddleware,
+    allowed_hosts=["127.0.0.1", "localhost"],
 )
+
+
+@app.middleware("http")
+async def local_clients_only(request: Request, call_next):
+    """Reject traffic that did not originate from this computer."""
+    client_host = request.client.host if request.client else ""
+    try:
+        is_loopback = ip_address(client_host.split("%", 1)[0]).is_loopback
+    except ValueError:
+        is_loopback = False
+    if not is_loopback:
+        return JSONResponse(status_code=403, content={"detail": "Local access only"})
+    return await call_next(request)
 
 # API Routes
 from src.api.routes import router as api_router
@@ -71,4 +86,4 @@ async def health():
     return {"status": "healthy", "providers": provider_registry.list_providers()}
 
 if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    uvicorn.run(app, host="127.0.0.1", port=8000)

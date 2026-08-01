@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, BackgroundTasks
+from fastapi import APIRouter, HTTPException, BackgroundTasks, Depends, Header
 from src.core.models import Project
 from src.storage.repository import get_db
 from src.core.registry import provider_registry, CONFIG
@@ -10,6 +10,21 @@ import json
 import os
 
 router = APIRouter()
+
+LOCAL_CONTROL_HEADER = "X-AIPE-Control"
+
+
+def require_local_control(
+    control_header: str | None = Header(default=None, alias=LOCAL_CONTROL_HEADER),
+) -> None:
+    """Block cross-origin form/fetch requests from triggering local controls.
+
+    A custom header forces browsers to perform a CORS preflight. Since this
+    application deliberately exposes no CORS policy, other websites cannot
+    send the protected request. The bundled same-origin UI adds the header.
+    """
+    if control_header != "1":
+        raise HTTPException(status_code=403, detail="Local control header required")
 
 @router.post("/projects")
 async def create_project(data: dict):
@@ -109,7 +124,11 @@ async def delete_project(project_id: str):
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.post("/projects/{project_id}/run")
-async def start_run(project_id: str, background_tasks: BackgroundTasks):
+async def start_run(
+    project_id: str,
+    background_tasks: BackgroundTasks,
+    _control: None = Depends(require_local_control),
+):
     try:
         print(f"🔥 start_run התקבל לפרויקט {project_id}")
         db = next(get_db())
@@ -320,7 +339,7 @@ async def parse_bible_endpoint(data: dict):
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.post("/shutdown")
-async def shutdown():
+async def shutdown(_control: None = Depends(require_local_control)):
     """סוגר את השרת בכוח (לחצן 'יציאה' בממשק)."""
     import signal
     import threading
@@ -341,8 +360,15 @@ async def health():
     return {"status": "ok"}
 
 @router.post("/projects/{project_id}/pause")
-async def pause(): return {"status": "paused"}
+async def pause(project_id: str, _control: None = Depends(require_local_control)):
+    return {"status": "paused"}
+
+
 @router.post("/projects/{project_id}/resume")
-async def resume(): return {"status": "active"}
+async def resume(project_id: str, _control: None = Depends(require_local_control)):
+    return {"status": "active"}
+
+
 @router.post("/projects/{project_id}/stop")
-async def stop(): return {"status": "stopped"}
+async def stop(project_id: str, _control: None = Depends(require_local_control)):
+    return {"status": "stopped"}
